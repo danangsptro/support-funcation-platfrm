@@ -10,10 +10,10 @@ Bagian ini adalah hasil untuk **revisi terakhir**. Bagian §1 di bawahnya adalah
 ### Ringkasan
 | Pemeriksaan | Runtime | Hasil |
 |---|---|---|
-| Lint · typecheck · production build (backend `nest build` + frontend Vite) | Node 22.23.4 (container `node:22.23.4-alpine`), instal bersih `pnpm install --frozen-lockfile` | Host Node 22.9.0: lint PASS · typecheck PASS · build PASS (revisi akhir). Container Node 22.23.4: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim (run sebelumnya pada revisi sebelum Swagger: lint/typecheck/build PASS) |
-| Unit backend (Jest) | Node 22.23.4 container · Node 22.9.0 host | Host: 85/85 PASS (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
-| Unit frontend (Vitest) | Node 22.23.4 container · Node 22.9.0 host | Host: 70/70 PASS (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
-| Integration PostgreSQL 16.15 (scope, idempotensi, D-42, snapshot, concurrency approval 2 instance, audit privileges, riwayat > 100 run, Swagger) | Node 22.23.4 container · Node 22.9.0 host | Host: 184/184 PASS, 12 suite (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
+| Lint · typecheck · production build (backend `nest build` + frontend Vite) | Node 22.23.4 (container `node:22.23.4-alpine`), instal bersih `pnpm install --frozen-lockfile` | Host Node 22.9.0: lint PASS · typecheck PASS · build PASS (revisi akhir). Container Node 22.23.4 (instal bersih): lint PASS · typecheck PASS · build PASS |
+| Unit backend (Jest) | Node 22.23.4 container · Node 22.9.0 host | Container: 85/85 PASS · Host: 85/85 PASS |
+| Unit frontend (Vitest) | Node 22.23.4 container · Node 22.9.0 host | Container: **70/70 PASS** pada run ulang suite penuh (16 file). Run pertama 69/70: `AnalyticsTab.test.tsx` melewati batas waktu default 5 dtk (7,9 dtk) saat suite berjalan paralel tepat setelah instal; tidak ada perubahan kode di antara kedua run. Host: 70/70 PASS |
+| Integration PostgreSQL 16.15 (scope, idempotensi, D-42, snapshot, concurrency approval 2 instance, audit privileges, riwayat > 100 run, Swagger) | Node 22.23.4 container · Node 22.9.0 host | Container: 184/184 PASS · Host: 184/184 PASS (12 suite) |
 | E2E Chrome terisolasi `pnpm test:e2e` (desktop 1280px + HP 390px), lalu restart api/web + persistence | Host Node 22.9.0 (Playwright), image dari Dockerfile final | 32/32 PASS → 3/3 PASS |
 | Validator fixture · crosscheck | Python 3.10.13 | PASS · 48/48 PASS |
 | Checkout bersih (stack `sfp-clean`, port 8099/3009/5439) | Docker, `--no-cache --pull` | PASS (rincian di bawah) |
@@ -65,6 +65,7 @@ Catatan: dua perubahan Dockerfile terakhir (urutan `COPY prisma` + postinstall, 
 - Smoke manual oleh manusia dan gladi presentasi belum dilakukan (E2E otomatis + screenshot sebagai pengganti).
 - HP hanya diuji di 390px (Chrome emulasi), bukan perangkat fisik.
 - Tidak ada CI; semua run lokal.
+- `AnalyticsTab.test.tsx` sensitif waktu di container lambat (lihat ringkasan); perbaikan yang disarankan: naikkan batas waktu test atau kurangi paralelisme Vitest di CI.
 - Akar masalah hang options belum diketahui (lihat di atas).
 - Build `--no-cache` tidak diulang setelah dua perubahan Dockerfile terakhir (lihat catatan).
 
