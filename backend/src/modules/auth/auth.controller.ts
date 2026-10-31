@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, HttpCode, Inject, Post, Req, Res } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import type { Actor } from '../access/actor';
@@ -13,6 +14,7 @@ export interface AuthOptions {
   cookieSecure: boolean;
 }
 
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(

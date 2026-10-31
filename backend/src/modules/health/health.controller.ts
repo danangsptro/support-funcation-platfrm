@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { AppException } from '../../common/app-exception';
 import { PrismaService } from '../../database/prisma.service';
@@ -6,6 +7,7 @@ import { Public } from '../access/decorators';
 const READY_TIMEOUT_MS = 2000;
 
 @Public()
+@ApiTags('Health')
 @Controller('health')
 export class HealthController {
   constructor(private readonly prisma: PrismaService) {}

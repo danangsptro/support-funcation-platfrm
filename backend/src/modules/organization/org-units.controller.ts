@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
 import { RequestId } from '../../common/request-context';
 import type { Actor } from '../access/actor';
@@ -6,6 +7,7 @@ import { Permission } from '../access/permissions';
 import { ListOrgUnitsQuery, UpdateOrgUnitDto } from './org-units.dto';
 import { OrgUnitsService } from './org-units.service';
 
+@ApiTags('Organisasi')
 @Controller('org-units')
 export class OrgUnitsController {
   constructor(private readonly units: OrgUnitsService) {}

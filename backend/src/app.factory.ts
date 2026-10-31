@@ -2,6 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import { AppModule, AppOptions } from './app.module';
+import { setupApiDocs } from './common/api-docs';
 import { HttpExceptionFilter } from './common/http-exception.filter';
 import { accessLogMiddleware } from './common/access-log.middleware';
 import { requestIdMiddleware } from './common/request-id.middleware';
@@ -15,6 +16,7 @@ export async function createApp(options: AppOptions, logger = true): Promise<INe
     logger: logger ? ['log', 'warn', 'error'] : false,
   });
   configureApp(app, options);
+  setupApiDocs(app);
   return app;
 }
 

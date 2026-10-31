@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { RequestId } from '../../common/request-context';
 import type { Actor } from '../access/actor';
@@ -8,6 +9,7 @@ import { CalculateBody, CreateKpiBody, CreatePeriodBody, PeriodQuery, UpdateKpiB
 import { PeriodsService } from './periods.service';
 import { ReviewsService } from './reviews.service';
 
+@ApiTags('Performa & RPE')
 @Controller()
 export class PerformanceController {
   constructor(

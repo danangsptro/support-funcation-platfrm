@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "prisma generate",
-    "build": "tsc -p tsconfig.build.json",
+    "build": "nest build",
     "start": "node dist/main.js",
     "dev": "nest start --watch",
     "lint": "eslint .",
@@ -20,6 +20,7 @@
     "@nestjs/core": "^11.1.0",
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.1.0",
+    "@nestjs/swagger": "~11.4.7",
     "@prisma/client": "~6.19.0",
     "bcryptjs": "^3.0.2",
     "class-transformer": "^0.5.1",

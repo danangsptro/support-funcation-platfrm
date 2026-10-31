@@ -15,7 +15,7 @@ Status: seluruh requirement wajib (A-1..C-3) **DONE** dan dapat diselesaikan lew
 |---|---|
 | [PRODUCT_MEMO.md](PRODUCT_MEMO.md) | Masalah bisnis, scope MVP, asumsi, definisi revenue/KPI/RPE, trade-off, roadmap |
 | [docs/architecture.md](docs/architecture.md) | Diagram deployment & modul, ERD final, alur Finance → HR, transaksi approval & audit, data scoping |
-| [docs/api.md](docs/api.md) | Kontrak API aktual |
+| [docs/api.md](docs/api.md) | Kontrak API aktual; versi interaktif: Swagger UI di http://localhost:8080/api/v1/docs (OpenAPI JSON: `/api/v1/docs-json`) |
 | [docs/business-rules.md](docs/business-rules.md) | Aturan bisnis final (formula, matching, akses, workflow) |
 | [docs/requirements-matrix.md](docs/requirements-matrix.md) | Requirement PDF → fitur → test → bukti |
 | [docs/test-report.md](docs/test-report.md) | Hasil regression final + histori test per phase |
@@ -105,6 +105,7 @@ Keduanya idempoten: file yang sudah diimpor dikenali, run dengan dataset + rule 
 | Service | Default | Variabel `.env` | Catatan |
 |---|---|---|---|
 | Web | http://localhost:8080 | `WEB_HOST_PORT` | Satu-satunya pintu untuk browser |
+| Swagger UI | http://localhost:8080/api/v1/docs | `WEB_HOST_PORT` | Dokumentasi API interaktif; login lewat `POST /auth/login`, salin `accessToken` → **Authorize** |
 | API | http://127.0.0.1:3000/api/v1 | `API_HOST_PORT` | Hanya localhost; `/health/live`, `/health/ready` |
 | PostgreSQL | 127.0.0.1:5433 | `DB_HOST_PORT` | Hanya localhost; 5432 sengaja dihindari |
 | E2E terisolasi | 8096 / 3006 / 5436 | — | Project `sfp-e2e`, dibuat & dihapus oleh `pnpm test:e2e` |

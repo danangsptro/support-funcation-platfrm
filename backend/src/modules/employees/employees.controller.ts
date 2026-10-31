@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import type { Actor } from '../access/actor';
 import { CurrentActor, RequirePermission } from '../access/decorators';
@@ -5,6 +6,7 @@ import { Permission } from '../access/permissions';
 import { EmployeeSummaryQuery, ListEmployeesQuery } from './employees.dto';
 import { EmployeesService } from './employees.service';
 
+@ApiTags('Karyawan')
 @Controller('employees')
 @RequirePermission(Permission.EmployeeRead)
 export class EmployeesController {

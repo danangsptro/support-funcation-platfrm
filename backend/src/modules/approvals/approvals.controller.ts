@@ -1,3 +1,4 @@
+import { ApiTags } from '@nestjs/swagger';
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { RequestId } from '../../common/request-context';
 import type { Actor } from '../access/actor';
@@ -10,6 +11,7 @@ import { CreateRequestBody, DecisionBody, DelegateBody, ListRequestsQuery, Rejec
  * Baca (list/detail/audit) hanya butuh login: visibilitas ditentukan per pengajuan oleh service
  * (pengaju sendiri / oversight eksplisit / reviewer ber-role+scope); tanpa salah satunya hasilnya kosong/404.
  */
+@ApiTags('Persetujuan anggaran')
 @Controller('approval-requests')
 export class ApprovalsController {
   constructor(private readonly approvals: ApprovalsService) {}

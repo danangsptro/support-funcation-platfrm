@@ -1,3 +1,4 @@
+import { ApiTags, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import {
   Body,
   Controller,
@@ -23,6 +24,7 @@ import { DatasetsService } from './datasets.service';
 import { CreateRunBody, ImportDatasetBody, ListDatasetsQuery, ListResultsQuery, ListRunsQuery } from './dto';
 import { RunsService } from './runs.service';
 
+@ApiTags('Rekonsiliasi')
 @Controller()
 export class ReconciliationController {
   constructor(
@@ -33,6 +35,19 @@ export class ReconciliationController {
   /** multipart/form-data: file (CSV) + unitId + accountId + side. 201 baru, 200 bila file identik sudah ada. */
   @Post('datasets/import')
   @RequirePermission(Permission.DatasetImport)
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['unitId', 'accountId', 'side', 'file'],
+      properties: {
+        unitId: { type: 'string', format: 'uuid' },
+        accountId: { type: 'string', example: 'ACC-1' },
+        side: { type: 'string', enum: ['INTERNAL', 'EXTERNAL'] },
+        file: { type: 'string', format: 'binary', description: 'CSV ≤ 1 MiB / 5.000 baris (lihat samples/test-data/reconciliation/scoped)' },
+      },
+    },
+  })
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: MAX_IMPORT_BYTES, files: 1, fields: 10 } }))
   async importDataset(
     @CurrentActor() actor: Actor,

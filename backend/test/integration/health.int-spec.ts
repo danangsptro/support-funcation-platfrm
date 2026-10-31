@@ -10,6 +10,16 @@ describe('health, request ID, format error', () => {
   });
   afterAll(() => app.close());
 
+  it('dokumentasi API: Swagger UI & OpenAPI JSON terbuka tanpa login, memuat endpoint utama', async () => {
+    await request(app.getHttpServer()).get('/api/v1/docs').expect(200).expect('content-type', /html/);
+    const res = await request(app.getHttpServer()).get('/api/v1/docs-json').expect(200);
+    expect(res.body.openapi).toMatch(/^3\./);
+    expect(Object.keys(res.body.paths)).toEqual(
+      expect.arrayContaining(['/api/v1/auth/login', '/api/v1/datasets/import', '/api/v1/reconciliation-runs', '/api/v1/reviews/{id}/finalize', '/api/v1/approval-requests/{id}/steps/{stepId}/approve']),
+    );
+    expect(res.body.components.securitySchemes).toHaveProperty('bearer');
+  });
+
   it('live selalu 200', async () => {
     await request(app.getHttpServer()).get('/api/v1/health/live').expect(200, { status: 'ok' });
   });

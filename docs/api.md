@@ -1,5 +1,7 @@
 # Kontrak API
 
+> **Swagger / OpenAPI**: dokumentasi interaktif tersedia di `/api/v1/docs` (mis. http://localhost:8080/api/v1/docs) dan JSON OpenAPI 3 di `/api/v1/docs-json`. Skema DTO dihasilkan otomatis oleh plugin `@nestjs/swagger` saat `nest build` dari tipe TypeScript + dekorator class-validator. Untuk mencoba: `POST /api/v1/auth/login` → salin `accessToken` → tombol **Authorize** (skema *bearer*). Endpoint dokumentasi tidak butuh login; otorisasi API tetap di guard.
+
 Prefix `/api/v1`. Semua endpoint wajib terautentikasi kecuali ditandai **publik**, lewat salah satu:
 - **Browser:** cookie `sfp_session` (httpOnly, `SameSite=Strict`, `Path=/api`, `Secure` bila `COOKIE_SECURE=true`) yang dipasang saat login. Request selain GET/HEAD/OPTIONS wajib membawa header `X-Requested-With: sfp-web`, jika tidak → 403 `CSRF_CHECK_FAILED`.
 - **Klien API/CLI:** header `Authorization: Bearer <token>` (tidak perlu header CSRF). Nominal uang berupa string desimal. Setiap respons membawa header `x-request-id`.
