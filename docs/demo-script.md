@@ -1,6 +1,6 @@
 # Demo script — Support Function Platform
 
-Durasi ±15 menit dalam sesi 45 menit (sisanya presentasi & code defense, lihat [presentation/presenter-notes.md](presentation/presenter-notes.md)). Semua langkah lewat UI. Angka expected berasal dari fixture `samples/test-data/` dan diverifikasi otomatis oleh integration test & E2E ([test-report.md](test-report.md)).
+Durasi ±15 menit dalam sesi 45 menit (sisanya presentasi & code defense). Semua langkah lewat UI. Angka expected berasal dari fixture `samples/test-data/` dan diverifikasi otomatis oleh integration test & E2E ([test-report.md](test-report.md)).
 
 > **Pakai stack gladi terpisah.** Finalisasi review dan keputusan approval **tidak bisa dibatalkan**. Jangan memakai database demo harian untuk gladi; skrip ini tidak mengisi database apa pun secara otomatis.
 

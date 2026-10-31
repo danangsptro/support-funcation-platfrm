@@ -20,7 +20,6 @@ Status: seluruh requirement wajib (A-1..C-3) **DONE** dan dapat diselesaikan lew
 | [docs/requirements-matrix.md](docs/requirements-matrix.md) | Requirement PDF → fitur → test → bukti |
 | [docs/test-report.md](docs/test-report.md) | Hasil regression final + histori test per phase |
 | [docs/demo-script.md](docs/demo-script.md) | Urutan demo, akun, fixture, expected result, stack gladi |
-| [docs/presentation/](docs/presentation/) | Deck 7 slide (PDF + HTML) dan catatan presenter |
 | [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Deliverable wajib → file → status verifikasi |
 
 ## Stack
@@ -29,7 +28,7 @@ NestJS 11 + TypeScript 5.9 · Prisma 6.19 (+ migration SQL untuk constraint/role
 ```
 backend/      NestJS API; prisma/ (schema + migrations); src/database/seed; test/integration (PostgreSQL nyata)
 frontend/     React + Vite; e2e/ (Playwright); nginx.conf untuk container web
-docs/         dokumen deliverable + presentation/
+docs/         dokumen deliverable
 docker/       init script PostgreSQL (role & database), impor server pgAdmin
 samples/      fixture test-data + expected results (tidak diubah)
 scripts/      E2E terisolasi, penyiapan data demo, crosscheck fixture

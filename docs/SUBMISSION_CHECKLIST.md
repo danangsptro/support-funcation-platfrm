@@ -13,8 +13,8 @@ Deliverable wajib dari PDF soal → file di repository → status verifikasi. Bu
 | 6 | Fixture & expected results | `samples/test-data/` (tidak diubah) | `validate_fixtures.py` PASS, crosscheck 48/48 | ✅ PASS |
 | 7 | README.md: setup, migrasi, test | [README.md](../README.md) | Diikuti langkah demi langkah pada salinan bersih | __S_CLEAN__ |
 | 8 | PRODUCT_MEMO.md | [PRODUCT_MEMO.md](../PRODUCT_MEMO.md) | Konsisten dengan business-rules & test-report | ✅ Ditinjau |
-| 9 | Presentation deck 5–7 slide (PDF/interaktif) | [presentation/deck.pdf](presentation/deck.pdf) (7 slide), sumber [presentation/deck.html](presentation/deck.html) | Dirender & diperiksa: tanpa teks meluap/terpotong | __S_DECK__ |
-| 10 | Persiapan sesi 45 menit (presentasi + code defense) | [presentation/presenter-notes.md](presentation/presenter-notes.md), [demo-script.md](demo-script.md) | Langkah demo sesuai perilaku yang diuji E2E | ✅ Tersedia |
+| 9 | Presentation deck 5–7 slide (PDF/interaktif) | Tidak di repository: deck 7 slide (PDF) dan catatan presenter disimpan pribadi oleh presenter, diserahkan/dibawakan terpisah | Dirender & diperiksa: tanpa teks meluap/terpotong | ✅ Di luar repo |
+| 10 | Persiapan sesi 45 menit (presentasi + code defense) | [demo-script.md](demo-script.md) (catatan presenter di luar repo) | Langkah demo sesuai perilaku yang diuji E2E | ✅ Tersedia |
 | 11 | Format penyerahan: repositori Git | Repo ini (`master`) | Lihat "Kesiapan commit" | ⏳ Perlu commit oleh pemilik |
 
 ## Dokumen pendukung

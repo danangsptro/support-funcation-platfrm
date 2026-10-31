@@ -41,7 +41,7 @@ Alur request: middleware `x-request-id` + log akses → validasi DTO (field asin
 backend/      NestJS API (paket pnpm "api"): src/modules, src/common, src/database (PrismaService, seed),
               prisma/ (schema + 4 migration), test/integration (PostgreSQL nyata), Dockerfile (build/migrate/runtime)
 frontend/     React + Vite (paket "web"): src/{components,features,lib,routes}, e2e/ (Playwright), nginx.conf, Dockerfile
-docs/         deliverable: arsitektur, API, aturan bisnis, matrix, test report, demo script, presentation/
+docs/         deliverable: arsitektur, API, aturan bisnis, matrix, test report, demo script
 docker/       init script PostgreSQL (role & database), impor server pgAdmin
 samples/      fixture test-data + expected results (tidak diubah)
 scripts/      e2e-isolated.sh, prepare-demo-recon.mjs, generate-erd.py, phase00_crosscheck.py
