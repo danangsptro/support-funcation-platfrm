@@ -1,0 +1,22 @@
+[
+  {
+    "id": "EMP-1",
+    "organization_id": "ORG-1",
+    "name": "Karyawan Demo 1"
+  },
+  {
+    "id": "EMP-2",
+    "organization_id": "ORG-1",
+    "name": "Karyawan Demo 2"
+  },
+  {
+    "id": "EMP-3",
+    "organization_id": "ORG-1",
+    "name": "Karyawan Demo 3"
+  },
+  {
+    "id": "EMP-4",
+    "organization_id": "ORG-1",
+    "name": "Karyawan Demo 4"
+  }
+]

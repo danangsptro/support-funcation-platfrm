@@ -1,0 +1,34 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "support (owner - lihat semua data)",
+      "Group": "Support Function Platform",
+      "Host": "localhost",
+      "Port": 5433,
+      "MaintenanceDB": "support",
+      "Username": "app_owner",
+      "SSLMode": "prefer",
+      "Comment": "Database utama. Password = APP_OWNER_PASSWORD di .env. Role pemilik skema: hati-hati, bisa mengubah data."
+    },
+    "2": {
+      "Name": "support (runtime - sudut pandang API)",
+      "Group": "Support Function Platform",
+      "Host": "localhost",
+      "Port": 5433,
+      "MaintenanceDB": "support",
+      "Username": "app_runtime",
+      "SSLMode": "prefer",
+      "Comment": "Role yang dipakai API. Password = APP_RUNTIME_PASSWORD di .env. Tidak bisa UPDATE/DELETE audit_events."
+    },
+    "3": {
+      "Name": "support_test (dikosongkan oleh integration test)",
+      "Group": "Support Function Platform",
+      "Host": "localhost",
+      "Port": 5433,
+      "MaintenanceDB": "support_test",
+      "Username": "app_owner",
+      "SSLMode": "prefer",
+      "Comment": "Database test; isinya di-reset setiap integration test berjalan."
+    }
+  }
+}

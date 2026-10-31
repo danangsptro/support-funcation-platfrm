@@ -1,0 +1,58 @@
+[
+  {
+    "user_id": "ADMIN",
+    "role": "ADMIN",
+    "organization_id": "ORG-1",
+    "unit_id": null,
+    "include_descendants": true
+  },
+  {
+    "user_id": "HR",
+    "role": "HR",
+    "organization_id": "ORG-1",
+    "unit_id": "DIV-1",
+    "include_descendants": true
+  },
+  {
+    "user_id": "FINANCE",
+    "role": "FINANCE",
+    "organization_id": "ORG-1",
+    "unit_id": "DIV-1",
+    "include_descendants": true
+  },
+  {
+    "user_id": "MANAGER-A",
+    "role": "MANAGER",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "include_descendants": true
+  },
+  {
+    "user_id": "MANAGER-A2",
+    "role": "MANAGER",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "include_descendants": true
+  },
+  {
+    "user_id": "MANAGER-B",
+    "role": "MANAGER",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-B",
+    "include_descendants": true
+  },
+  {
+    "user_id": "EMPLOYEE-A",
+    "role": "REQUESTER",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "include_descendants": true
+  },
+  {
+    "user_id": "OUTSIDER",
+    "role": "ADMIN",
+    "organization_id": "ORG-2",
+    "unit_id": null,
+    "include_descendants": true
+  }
+]

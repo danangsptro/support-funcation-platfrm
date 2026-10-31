@@ -1,0 +1,32 @@
+[
+  {
+    "employee_id": "EMP-1",
+    "unit_id": "BR-A",
+    "start_date": "2026-09-01",
+    "end_date_exclusive": null
+  },
+  {
+    "employee_id": "EMP-2",
+    "unit_id": "BR-A",
+    "start_date": "2026-09-16",
+    "end_date_exclusive": null
+  },
+  {
+    "employee_id": "EMP-3",
+    "unit_id": "BR-A",
+    "start_date": "2026-09-01",
+    "end_date_exclusive": "2026-09-16"
+  },
+  {
+    "employee_id": "EMP-3",
+    "unit_id": "BR-B",
+    "start_date": "2026-09-16",
+    "end_date_exclusive": null
+  },
+  {
+    "employee_id": "EMP-4",
+    "unit_id": "BR-B",
+    "start_date": "2026-09-01",
+    "end_date_exclusive": null
+  }
+]

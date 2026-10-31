@@ -1,0 +1,33 @@
+{
+  "policy": "Each CSV is an independent negative test; entire import rejected with 400 and zero rows inserted. Access failures are separately tested with 403/404.",
+  "cases": [
+    {
+      "file": "BAD-1.csv",
+      "reason": "INVALID_AMOUNT"
+    },
+    {
+      "file": "BAD-2.csv",
+      "reason": "NEGATIVE_REVENUE"
+    },
+    {
+      "file": "BAD-3.csv",
+      "reason": "INVALID_DATE"
+    },
+    {
+      "file": "BAD-4.csv",
+      "reason": "REQUIRED_REFERENCE"
+    },
+    {
+      "file": "BAD-5.csv",
+      "reason": "UNSUPPORTED_CURRENCY"
+    },
+    {
+      "file": "BAD-6.csv",
+      "reason": "UNKNOWN_UNIT"
+    },
+    {
+      "file": "BAD-7.csv",
+      "reason": "UNIT_ORG_MISMATCH"
+    }
+  ]
+}

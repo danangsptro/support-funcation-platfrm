@@ -1,0 +1,2 @@
+transaction_id,organization_id,unit_id,account_id,reference,transaction_date,amount,currency,transaction_type
+I8,ORG-1,BR-B,ACC-1,REF-008,2026-09-10,6000000,IDR,REVENUE

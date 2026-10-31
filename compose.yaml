@@ -1,0 +1,75 @@
+# Satu perintah: `docker compose up --build` (setelah `cp .env.example .env` dan mengisi nilainya).
+name: support-function-platform
+
+services:
+  db:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:?isi di .env}
+      POSTGRES_DB: postgres
+      APP_OWNER_PASSWORD: ${APP_OWNER_PASSWORD:?isi di .env}
+      APP_RUNTIME_PASSWORD: ${APP_RUNTIME_PASSWORD:?isi di .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Hanya dari laptop ini (pgAdmin/test), tidak dari jaringan lain.
+      - "127.0.0.1:${DB_HOST_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d support"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Job sekali jalan: migration lalu seed dengan credential owner. Gagal → api tidak start.
+  migrate:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: migrate
+    image: support-function-migrate:local
+    environment:
+      DATABASE_URL: postgresql://app_owner:${APP_OWNER_PASSWORD}@db:5432/support
+      DEMO_PASSWORD: ${DEMO_PASSWORD:?isi di .env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+    image: support-function-api:local
+    environment:
+      DATABASE_URL: postgresql://app_runtime:${APP_RUNTIME_PASSWORD}@db:5432/support
+      PORT: "3000"
+      JWT_SECRET: ${JWT_SECRET:?isi di .env}
+      JWT_EXPIRES_IN_SECONDS: ${JWT_EXPIRES_IN_SECONDS:-3600}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-loopback, linklocal, uniquelocal}
+    ports:
+      # Akses publik lewat web (nginx); port API langsung hanya untuk localhost.
+      - "127.0.0.1:${API_HOST_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "${WEB_HOST_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db-data:

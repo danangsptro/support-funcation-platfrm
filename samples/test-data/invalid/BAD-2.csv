@@ -1,0 +1,2 @@
+transaction_id,organization_id,unit_id,account_id,reference,transaction_date,amount,currency,transaction_type
+BAD-2,ORG-1,BR-A,ACC-1,BAD-REF,2026-09-10,-100,IDR,REVENUE

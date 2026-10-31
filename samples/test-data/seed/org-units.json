@@ -1,0 +1,44 @@
+[
+  {
+    "id": "DIV-1",
+    "organization_id": "ORG-1",
+    "parent_id": null,
+    "type": "DIVISION",
+    "name": "DIV-1"
+  },
+  {
+    "id": "BR-A",
+    "organization_id": "ORG-1",
+    "parent_id": "DIV-1",
+    "type": "BRANCH",
+    "name": "BR-A"
+  },
+  {
+    "id": "BR-B",
+    "organization_id": "ORG-1",
+    "parent_id": "DIV-1",
+    "type": "BRANCH",
+    "name": "BR-B"
+  },
+  {
+    "id": "BR-ZERO",
+    "organization_id": "ORG-1",
+    "parent_id": "DIV-1",
+    "type": "BRANCH",
+    "name": "BR-ZERO"
+  },
+  {
+    "id": "CC-A",
+    "organization_id": "ORG-1",
+    "parent_id": "BR-A",
+    "type": "COST_CENTER",
+    "name": "CC-A"
+  },
+  {
+    "id": "BR-X",
+    "organization_id": "ORG-2",
+    "parent_id": null,
+    "type": "BRANCH",
+    "name": "BR-X"
+  }
+]

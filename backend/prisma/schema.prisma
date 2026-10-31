@@ -1,0 +1,554 @@
+// Schema PostgreSQL. Constraint yang tidak bisa diekspresikan Prisma (FK komposit organisasi,
+// EXCLUDE overlap penempatan, CHECK, partial unique, trigger audit, grant role runtime) ada di
+// migration SQL. Lihat docs/architecture.md §5 sebelum membuat migration baru.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrgUnitType {
+  DIVISION
+  BRANCH
+  COST_CENTER
+}
+
+enum Role {
+  ADMIN
+  HR
+  FINANCE
+  MANAGER
+  REQUESTER
+}
+
+enum TransactionSide {
+  INTERNAL
+  EXTERNAL
+}
+
+enum KpiSource {
+  VERIFIED_UNIT_REVENUE
+  MANUAL
+}
+
+enum ReviewStatus {
+  DRAFT
+  FINALIZED
+}
+
+enum RunStatus {
+  COMPLETED
+}
+
+enum MatchStatus {
+  MATCHED
+  MISMATCHED
+  MISSING_IN_INTERNAL
+  MISSING_IN_EXTERNAL
+}
+
+enum StepConditionType {
+  ALWAYS
+  AMOUNT_GT
+}
+
+enum ApprovalStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum StepStatus {
+  WAITING
+  ACTIVE
+  APPROVED
+  REJECTED
+}
+
+enum ApprovalActionType {
+  APPROVE
+  REJECT
+  DELEGATE
+}
+
+// ---------- Organisasi & identitas ----------
+
+model Organization {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalKey String   @unique @map("external_key")
+  name        String
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  units     OrgUnit[]
+  grants    UserAccessGrant[]
+  employees Employee[]
+  periods   ReviewPeriod[]
+  workflows WorkflowDefinition[]
+  requests  ApprovalRequest[]
+  datasets  TransactionDataset[]
+  txs       FinancialTransaction[]
+
+  @@map("organizations")
+}
+
+model OrgUnit {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String      @map("organization_id") @db.Uuid
+  parentId       String?     @map("parent_id") @db.Uuid
+  type           OrgUnitType
+  externalKey    String      @map("external_key")
+  name           String
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  parent       OrgUnit?     @relation("OrgUnitTree", fields: [parentId], references: [id])
+  children     OrgUnit[]    @relation("OrgUnitTree")
+
+  grants      UserAccessGrant[]
+  assignments EmployeeAssignment[]
+  kpis        KpiAssignment[]
+  reviews     PerformanceReview[]
+  reviewItems ReviewItem[]
+  requests    ApprovalRequest[]
+  datasets    TransactionDataset[]
+  txs         FinancialTransaction[]
+
+  @@unique([organizationId, externalKey])
+  @@unique([id, organizationId])
+  @@index([parentId])
+  @@map("org_units")
+}
+
+model User {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  externalKey  String   @unique @map("external_key")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  grants        UserAccessGrant[]
+  requests      ApprovalRequest[] @relation("Requester")
+  assignedSteps ApprovalStep[]    @relation("StepAssignee")
+  decidedSteps  ApprovalStep[]    @relation("StepDecider")
+  actions       ApprovalAction[]  @relation("ActionActor")
+  delegatedTo   ApprovalAction[]  @relation("ActionDelegate")
+
+  @@map("users")
+}
+
+model UserAccessGrant {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId             String   @map("user_id") @db.Uuid
+  role               Role
+  organizationId     String   @map("organization_id") @db.Uuid
+  unitId             String?  @map("unit_id") @db.Uuid
+  includeDescendants Boolean  @default(true) @map("include_descendants")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+  unit         OrgUnit?     @relation(fields: [unitId], references: [id])
+
+  @@index([userId])
+  @@map("user_access_grants")
+}
+
+// ---------- Karyawan ----------
+
+model Employee {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  externalKey    String   @map("external_key")
+  name           String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  assignments  EmployeeAssignment[]
+  kpis         KpiAssignment[]
+  reviews      PerformanceReview[]
+
+  @@unique([organizationId, externalKey])
+  @@unique([id, organizationId])
+  @@map("employees")
+}
+
+/// Interval [startDate, endDateExclusive); endDateExclusive null = masih aktif.
+model EmployeeAssignment {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId       String    @map("employee_id") @db.Uuid
+  organizationId   String    @map("organization_id") @db.Uuid
+  unitId           String    @map("unit_id") @db.Uuid
+  startDate        DateTime  @map("start_date") @db.Date
+  endDateExclusive DateTime? @map("end_date_exclusive") @db.Date
+  isPrimary        Boolean   @default(true) @map("is_primary")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  employee Employee @relation(fields: [employeeId], references: [id])
+  unit     OrgUnit  @relation(fields: [unitId], references: [id])
+
+  @@unique([employeeId, unitId, startDate])
+  @@index([unitId])
+  @@map("employee_assignments")
+}
+
+// ---------- Performa ----------
+
+model ReviewPeriod {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId   String   @map("organization_id") @db.Uuid
+  externalKey      String   @map("external_key")
+  startDate        DateTime @map("start_date") @db.Date
+  endDateExclusive DateTime @map("end_date_exclusive") @db.Date
+  timezone         String   @default("Asia/Jakarta")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization        @relation(fields: [organizationId], references: [id])
+  kpis         KpiAssignment[]
+  reviews      PerformanceReview[]
+
+  @@unique([organizationId, externalKey])
+  @@unique([id, organizationId])
+  @@map("review_periods")
+}
+
+model KpiAssignment {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String    @map("organization_id") @db.Uuid
+  employeeId     String    @map("employee_id") @db.Uuid
+  periodId       String    @map("period_id") @db.Uuid
+  externalKey    String?   @map("external_key")
+  name           String
+  source         KpiSource
+  unitId         String?   @map("unit_id") @db.Uuid
+  weight         Decimal   @db.Decimal(5, 2)
+  target         Decimal   @db.Decimal(20, 4)
+  actual         Decimal?  @db.Decimal(20, 4)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  employee Employee     @relation(fields: [employeeId], references: [id])
+  period   ReviewPeriod @relation(fields: [periodId], references: [id])
+  unit     OrgUnit?     @relation(fields: [unitId], references: [id])
+  items    ReviewItem[]
+
+  @@unique([organizationId, externalKey])
+  @@index([employeeId, periodId])
+  @@map("kpi_assignments")
+}
+
+model PerformanceReview {
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String       @map("organization_id") @db.Uuid
+  employeeId     String       @map("employee_id") @db.Uuid
+  periodId       String       @map("period_id") @db.Uuid
+  /// Unit penempatan primer karyawan di periode ini (dasar scope baca review).
+  unitId         String       @map("unit_id") @db.Uuid
+  status         ReviewStatus @default(DRAFT)
+  totalScore     Decimal?     @map("total_score") @db.Decimal
+  formulaVersion String       @map("formula_version")
+  provenance     Json         @default("{}")
+  calculatedAt   DateTime     @default(now()) @map("calculated_at") @db.Timestamptz(6)
+  finalizedAt    DateTime?    @map("finalized_at") @db.Timestamptz(6)
+  finalizedBy    String?      @map("finalized_by") @db.Uuid
+
+  employee Employee     @relation(fields: [employeeId], references: [id])
+  period   ReviewPeriod @relation(fields: [periodId], references: [id])
+  unit     OrgUnit      @relation(fields: [unitId], references: [id])
+  items    ReviewItem[]
+
+  @@unique([employeeId, periodId])
+  @@index([periodId, unitId])
+  @@map("performance_reviews")
+}
+
+model ReviewItem {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reviewId          String    @map("review_id") @db.Uuid
+  kpiAssignmentId   String    @map("kpi_assignment_id") @db.Uuid
+  kpiName           String    @map("kpi_name")
+  source            KpiSource
+  /// Unit sumber revenue (KPI VERIFIED_UNIT_REVENUE) saat snapshot.
+  unitId            String?   @map("unit_id") @db.Uuid
+  weight            Decimal   @db.Decimal(5, 2)
+  target            Decimal   @db.Decimal(20, 4)
+  actual            Decimal   @db.Decimal
+  achievement       Decimal   @db.Decimal
+  cappedAchievement Decimal   @map("capped_achievement") @db.Decimal
+  weightedScore     Decimal   @map("weighted_score") @db.Decimal
+
+  review PerformanceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  kpi    KpiAssignment     @relation(fields: [kpiAssignmentId], references: [id])
+  unit   OrgUnit?          @relation(fields: [unitId], references: [id])
+
+  @@unique([reviewId, kpiAssignmentId])
+  @@map("review_items")
+}
+
+// ---------- Rekonsiliasi ----------
+
+/// Transaksi canonical: satu baris per identitas sumber (org, side, account, source transaction id).
+model FinancialTransaction {
+  id                  String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId      String          @map("organization_id") @db.Uuid
+  unitId              String          @map("unit_id") @db.Uuid
+  side                TransactionSide
+  accountId           String          @map("account_id")
+  sourceTransactionId String          @map("source_transaction_id")
+  reference           String
+  transactionDate     DateTime        @map("transaction_date") @db.Date
+  amount              Decimal         @db.Decimal(20, 2)
+  currency            String          @db.Char(3)
+  transactionType     String          @map("transaction_type")
+  payloadHash         String          @map("payload_hash")
+  createdAt           DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization               @relation(fields: [organizationId], references: [id])
+  unit         OrgUnit                    @relation(fields: [unitId], references: [id])
+  datasets     DatasetTransaction[]
+  resultItems  ReconciliationResultItem[]
+  canonical    CanonicalReconciliation?
+
+  @@unique([organizationId, side, accountId, sourceTransactionId])
+  @@index([organizationId, unitId, transactionDate])
+  @@map("financial_transactions")
+}
+
+model TransactionDataset {
+  id             String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String          @map("organization_id") @db.Uuid
+  unitId         String          @map("unit_id") @db.Uuid
+  accountId      String          @map("account_id")
+  side           TransactionSide
+  fingerprint    String
+  rowCount       Int             @map("row_count")
+  sourceFilename String?         @map("source_filename")
+  importedBy     String?         @map("imported_by") @db.Uuid
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization         @relation(fields: [organizationId], references: [id])
+  unit         OrgUnit              @relation(fields: [unitId], references: [id])
+  transactions DatasetTransaction[]
+  internalRuns ReconciliationRun[]  @relation("InternalDataset")
+  externalRuns ReconciliationRun[]  @relation("ExternalDataset")
+
+  @@unique([organizationId, fingerprint])
+  @@map("transaction_datasets")
+}
+
+model DatasetTransaction {
+  datasetId     String @map("dataset_id") @db.Uuid
+  transactionId String @map("transaction_id") @db.Uuid
+
+  dataset     TransactionDataset   @relation(fields: [datasetId], references: [id])
+  transaction FinancialTransaction @relation(fields: [transactionId], references: [id])
+
+  @@id([datasetId, transactionId])
+  @@map("dataset_transactions")
+}
+
+model ReconciliationRun {
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId    String    @map("organization_id") @db.Uuid
+  unitId            String    @map("unit_id") @db.Uuid
+  accountId         String    @map("account_id")
+  internalDatasetId String    @map("internal_dataset_id") @db.Uuid
+  externalDatasetId String    @map("external_dataset_id") @db.Uuid
+  ruleVersion       String    @map("rule_version")
+  dateToleranceDays Int       @map("date_tolerance_days")
+  amountTolerance   Decimal   @map("amount_tolerance") @db.Decimal(20, 2)
+  status            RunStatus @default(COMPLETED)
+  createdBy         String?   @map("created_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt       DateTime? @map("completed_at") @db.Timestamptz(6)
+
+  internalDataset TransactionDataset        @relation("InternalDataset", fields: [internalDatasetId], references: [id])
+  externalDataset TransactionDataset        @relation("ExternalDataset", fields: [externalDatasetId], references: [id])
+  results         ReconciliationResult[]
+  canonical       CanonicalReconciliation[]
+
+  @@unique([internalDatasetId, externalDatasetId, ruleVersion])
+  @@map("reconciliation_runs")
+}
+
+model ReconciliationResult {
+  id                  String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  runId               String      @map("run_id") @db.Uuid
+  matchKey            String      @map("match_key")
+  reference           String
+  status              MatchStatus
+  reason              String?
+  internalAmountTotal Decimal     @map("internal_amount_total") @db.Decimal(20, 2)
+  externalAmountTotal Decimal     @map("external_amount_total") @db.Decimal(20, 2)
+  amountDifference    Decimal?    @map("amount_difference") @db.Decimal(20, 2)
+
+  run       ReconciliationRun          @relation(fields: [runId], references: [id])
+  items     ReconciliationResultItem[]
+  canonical CanonicalReconciliation[]
+
+  @@unique([runId, matchKey])
+  @@map("reconciliation_results")
+}
+
+model ReconciliationResultItem {
+  resultId      String          @map("result_id") @db.Uuid
+  runId         String          @map("run_id") @db.Uuid
+  transactionId String          @map("transaction_id") @db.Uuid
+  side          TransactionSide
+
+  result      ReconciliationResult @relation(fields: [resultId], references: [id])
+  transaction FinancialTransaction @relation(fields: [transactionId], references: [id])
+
+  @@id([resultId, transactionId])
+  @@unique([runId, transactionId])
+  @@map("reconciliation_result_items")
+}
+
+/// Satu hasil canonical per transaksi internal untuk analitik (verified revenue).
+model CanonicalReconciliation {
+  internalTransactionId String          @id @map("internal_transaction_id") @db.Uuid
+  /// Selalu INTERNAL; dipakai FK komposit (id, side) ke financial_transactions.
+  transactionSide       TransactionSide @default(INTERNAL) @map("transaction_side")
+  runId                 String          @map("run_id") @db.Uuid
+  resultId              String          @map("result_id") @db.Uuid
+  selectedAt            DateTime        @default(now()) @map("selected_at") @db.Timestamptz(6)
+
+  transaction FinancialTransaction @relation(fields: [internalTransactionId], references: [id])
+  run         ReconciliationRun    @relation(fields: [runId], references: [id])
+  result      ReconciliationResult @relation(fields: [resultId], references: [id])
+
+  @@index([runId])
+  @@map("canonical_reconciliations")
+}
+
+// ---------- Workflow & approval ----------
+
+model WorkflowDefinition {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId String   @map("organization_id") @db.Uuid
+  externalKey    String   @map("external_key")
+  version        Int
+  type           String
+  currency       String   @db.Char(3)
+  selfApproval   Boolean  @default(false) @map("self_approval")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  organization Organization      @relation(fields: [organizationId], references: [id])
+  steps        WorkflowStep[]
+  requests     ApprovalRequest[]
+
+  @@unique([organizationId, externalKey, version])
+  @@map("workflow_definitions")
+}
+
+model WorkflowStep {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workflowId      String            @map("workflow_id") @db.Uuid
+  stepOrder       Int               @map("step_order")
+  role            Role
+  conditionType   StepConditionType @map("condition_type")
+  conditionAmount Decimal?          @map("condition_amount") @db.Decimal(20, 2)
+
+  workflow WorkflowDefinition @relation(fields: [workflowId], references: [id])
+  steps    ApprovalStep[]
+
+  @@unique([workflowId, stepOrder])
+  @@map("workflow_steps")
+}
+
+model ApprovalRequest {
+  id               String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organizationId   String         @map("organization_id") @db.Uuid
+  unitId           String         @map("unit_id") @db.Uuid
+  externalKey      String?        @map("external_key")
+  requesterUserId  String         @map("requester_user_id") @db.Uuid
+  workflowId       String         @map("workflow_id") @db.Uuid
+  title            String         @default("")
+  /// Alasan/justifikasi pengajuan (wajib saat submit).
+  reason           String         @default("")
+  /// Snapshot definisi workflow (versi + langkah + kondisi) saat submit; tidak berubah setelahnya.
+  workflowSnapshot Json?          @map("workflow_snapshot")
+  amount           Decimal        @db.Decimal(20, 2)
+  currency         String         @db.Char(3)
+  status           ApprovalStatus @default(DRAFT)
+  currentStepOrder Int?           @map("current_step_order")
+  version          Int            @default(0)
+  submittedAt      DateTime?      @map("submitted_at") @db.Timestamptz(6)
+  decidedAt        DateTime?      @map("decided_at") @db.Timestamptz(6)
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  organization Organization       @relation(fields: [organizationId], references: [id])
+  unit         OrgUnit            @relation(fields: [unitId], references: [id])
+  requester    User               @relation("Requester", fields: [requesterUserId], references: [id])
+  workflow     WorkflowDefinition @relation(fields: [workflowId], references: [id])
+  steps        ApprovalStep[]
+  actions      ApprovalAction[]
+
+  @@unique([organizationId, externalKey])
+  @@index([organizationId, unitId, status])
+  @@map("approval_requests")
+}
+
+model ApprovalStep {
+  id             String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requestId      String     @map("request_id") @db.Uuid
+  workflowStepId String     @map("workflow_step_id") @db.Uuid
+  stepOrder      Int        @map("step_order")
+  role           Role
+  status         StepStatus @default(WAITING)
+  assigneeUserId String?    @map("assignee_user_id") @db.Uuid
+  decidedBy      String?    @map("decided_by") @db.Uuid
+  decidedAt      DateTime?  @map("decided_at") @db.Timestamptz(6)
+
+  request      ApprovalRequest  @relation(fields: [requestId], references: [id])
+  workflowStep WorkflowStep     @relation(fields: [workflowStepId], references: [id])
+  assignee     User?            @relation("StepAssignee", fields: [assigneeUserId], references: [id])
+  decider      User?            @relation("StepDecider", fields: [decidedBy], references: [id])
+  actions      ApprovalAction[]
+
+  @@unique([requestId, stepOrder])
+  @@map("approval_steps")
+}
+
+model ApprovalAction {
+  id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  stepId           String             @map("step_id") @db.Uuid
+  requestId        String             @map("request_id") @db.Uuid
+  actorUserId      String             @map("actor_user_id") @db.Uuid
+  action           ApprovalActionType
+  delegateToUserId String?            @map("delegate_to_user_id") @db.Uuid
+  comment          String?
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  step       ApprovalStep    @relation(fields: [stepId], references: [id])
+  request    ApprovalRequest @relation(fields: [requestId], references: [id])
+  actor      User            @relation("ActionActor", fields: [actorUserId], references: [id])
+  delegateTo User?           @relation("ActionDelegate", fields: [delegateToUserId], references: [id])
+
+  @@index([requestId])
+  @@map("approval_actions")
+}
+
+// ---------- Audit (append-only) ----------
+
+model AuditEvent {
+  id             BigInt   @id @default(autoincrement())
+  organizationId String   @map("organization_id") @db.Uuid
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id") @db.Uuid
+  actorUserId    String?  @map("actor_user_id") @db.Uuid
+  eventType      String   @map("event_type")
+  payload        Json     @default("{}")
+  traceId        String?  @map("trace_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([entityType, entityId, id])
+  @@map("audit_events")
+}

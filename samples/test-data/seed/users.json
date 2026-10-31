@@ -1,0 +1,47 @@
+[
+  {
+    "id": "ADMIN",
+    "email": "admin@example.test",
+    "active": true
+  },
+  {
+    "id": "HR",
+    "email": "hr@example.test",
+    "active": true
+  },
+  {
+    "id": "FINANCE",
+    "email": "finance@example.test",
+    "active": true
+  },
+  {
+    "id": "MANAGER-A",
+    "email": "manager-a@example.test",
+    "active": true
+  },
+  {
+    "id": "MANAGER-A2",
+    "email": "manager-a2@example.test",
+    "active": true
+  },
+  {
+    "id": "MANAGER-B",
+    "email": "manager-b@example.test",
+    "active": true
+  },
+  {
+    "id": "EMPLOYEE-A",
+    "email": "employee-a@example.test",
+    "active": true
+  },
+  {
+    "id": "OUTSIDER",
+    "email": "outsider@example.test",
+    "active": true
+  },
+  {
+    "id": "NO-GRANT",
+    "email": "no-grant@example.test",
+    "active": true
+  }
+]

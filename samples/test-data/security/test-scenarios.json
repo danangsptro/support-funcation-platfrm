@@ -1,0 +1,42 @@
+[
+  {
+    "id": "CROSS-BRANCH",
+    "actor": "MANAGER-A",
+    "resource_unit": "BR-B",
+    "action": "detail",
+    "expected_http": 404
+  },
+  {
+    "id": "CROSS-ORG",
+    "actor": "ADMIN",
+    "resource_org": "ORG-2",
+    "action": "detail",
+    "expected_http": 404
+  },
+  {
+    "id": "NO-GRANT",
+    "actor": "NO-GRANT",
+    "action": "protected operation",
+    "expected_http": 403
+  },
+  {
+    "id": "AGGREGATE",
+    "actor": "MANAGER-A",
+    "expected_verified_revenue": "15000000",
+    "forbidden_revenue": [
+      "6000000",
+      "9000000"
+    ]
+  },
+  {
+    "id": "ROLE",
+    "actor": "MANAGER-A",
+    "action": "import finance dataset",
+    "expected_http": 403
+  },
+  {
+    "id": "TOKEN",
+    "token": "invalid-token",
+    "expected_http": 401
+  }
+]

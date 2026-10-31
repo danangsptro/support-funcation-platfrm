@@ -1,0 +1,52 @@
+[
+  {
+    "id": "REQ-LOW",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "requester_id": "EMPLOYEE-A",
+    "amount": "5000000",
+    "currency": "IDR",
+    "status": "DRAFT",
+    "workflow_id": "WF-BUDGET"
+  },
+  {
+    "id": "REQ-BOUNDARY",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "requester_id": "EMPLOYEE-A",
+    "amount": "10000000",
+    "currency": "IDR",
+    "status": "DRAFT",
+    "workflow_id": "WF-BUDGET"
+  },
+  {
+    "id": "REQ-HIGH",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "requester_id": "EMPLOYEE-A",
+    "amount": "15000000",
+    "currency": "IDR",
+    "status": "DRAFT",
+    "workflow_id": "WF-BUDGET"
+  },
+  {
+    "id": "REQ-RACE",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "requester_id": "EMPLOYEE-A",
+    "amount": "15000000",
+    "currency": "IDR",
+    "status": "DRAFT",
+    "workflow_id": "WF-BUDGET"
+  },
+  {
+    "id": "REQ-DELEGATE",
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "requester_id": "EMPLOYEE-A",
+    "amount": "15000000",
+    "currency": "IDR",
+    "status": "DRAFT",
+    "workflow_id": "WF-BUDGET"
+  }
+]

@@ -1,0 +1,20 @@
+{
+  "id": "WF-BUDGET",
+  "version": 1,
+  "type": "BUDGET",
+  "currency": "IDR",
+  "steps": [
+    {
+      "order": 1,
+      "role": "MANAGER",
+      "condition": "always"
+    },
+    {
+      "order": 2,
+      "role": "FINANCE",
+      "condition": "amount > 10000000"
+    }
+  ],
+  "self_approval": false,
+  "delegation": "active user with same required role and compatible scope; never requester"
+}

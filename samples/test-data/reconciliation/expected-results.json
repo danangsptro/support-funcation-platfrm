@@ -1,0 +1,129 @@
+{
+  "scope": {
+    "organization_id": "ORG-1",
+    "unit_id": "BR-A",
+    "account_id": "ACC-1"
+  },
+  "rules": {
+    "version": "v1",
+    "date_tolerance_days": 1,
+    "amount_tolerance": "0",
+    "duplicate_policy": "one anomaly group; do not pair"
+  },
+  "results": [
+    {
+      "reference": "REF-001",
+      "status": "Matched",
+      "reason": null,
+      "internal_ids": [
+        "I1"
+      ],
+      "external_ids": [
+        "E1"
+      ]
+    },
+    {
+      "reference": "REF-002",
+      "status": "Matched",
+      "reason": null,
+      "internal_ids": [
+        "I2"
+      ],
+      "external_ids": [
+        "E2"
+      ]
+    },
+    {
+      "reference": "REF-003",
+      "status": "Mismatched",
+      "reason": "AMOUNT_DIFFERENCE",
+      "internal_ids": [
+        "I3"
+      ],
+      "external_ids": [
+        "E3"
+      ]
+    },
+    {
+      "reference": "REF-004",
+      "status": "Mismatched",
+      "reason": "DATE_OUTSIDE_TOLERANCE",
+      "internal_ids": [
+        "I4"
+      ],
+      "external_ids": [
+        "E4"
+      ]
+    },
+    {
+      "reference": "REF-005",
+      "status": "Missing in External",
+      "reason": "NO_EXTERNAL",
+      "internal_ids": [
+        "I5"
+      ],
+      "external_ids": []
+    },
+    {
+      "reference": "REF-006",
+      "status": "Missing in Internal",
+      "reason": "NO_INTERNAL",
+      "internal_ids": [],
+      "external_ids": [
+        "E5"
+      ]
+    },
+    {
+      "reference": "REF-007",
+      "status": "Mismatched",
+      "reason": "DUPLICATE_REFERENCE",
+      "internal_ids": [
+        "I6",
+        "I7"
+      ],
+      "external_ids": [
+        "E6"
+      ]
+    }
+  ],
+  "summary": {
+    "groups": 7,
+    "Matched": 2,
+    "Mismatched": 3,
+    "missing_in_internal": 1,
+    "missing_in_external": 1,
+    "matched_ratio_numerator": 2,
+    "matched_ratio_denominator": 7,
+    "matched_ratio_percent_rounded": "28.57",
+    "verified_revenue": "15000000",
+    "anomalous_internal_total": "7900000",
+    "anomalous_external_total": "6400000",
+    "unique_pair_amount_difference_total": "100000"
+  },
+  "other_scopes": [
+    {
+      "organization_id": "ORG-1",
+      "unit_id": "BR-B",
+      "internal_ids": [
+        "I8"
+      ],
+      "external_ids": [
+        "E7"
+      ],
+      "status": "Matched",
+      "verified_revenue": "6000000"
+    },
+    {
+      "organization_id": "ORG-2",
+      "unit_id": "BR-X",
+      "internal_ids": [
+        "I9"
+      ],
+      "external_ids": [
+        "E8"
+      ],
+      "status": "Matched",
+      "verified_revenue": "9000000"
+    }
+  ]
+}

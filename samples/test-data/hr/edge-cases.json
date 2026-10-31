@@ -1,0 +1,34 @@
+[
+  {
+    "id": "KPI-CAP",
+    "target": "10",
+    "actual": "15",
+    "weight": "100",
+    "expected_score": "120"
+  },
+  {
+    "id": "KPI-ZERO",
+    "target": "0",
+    "actual": "5",
+    "expected": "VALIDATION_ERROR"
+  },
+  {
+    "id": "KPI-NEGATIVE",
+    "target": "-1",
+    "actual": "5",
+    "expected": "VALIDATION_ERROR"
+  },
+  {
+    "id": "BAD-WEIGHTS",
+    "weights": [
+      "60",
+      "30"
+    ],
+    "expected": "FINALIZE_REJECTED"
+  },
+  {
+    "id": "SNAPSHOT",
+    "action": "finalize then add matched revenue",
+    "expected": "finalized score remains 85; live analytics may change"
+  }
+]

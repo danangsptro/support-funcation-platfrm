@@ -1,0 +1,23 @@
+[
+  {
+    "id": "KPI-1",
+    "employee_id": "EMP-1",
+    "period_id": "PERIOD-SEP",
+    "name": "Revenue cabang",
+    "source": "VERIFIED_UNIT_REVENUE",
+    "unit_id": "BR-A",
+    "weight": "60",
+    "target": "20000000",
+    "actual_override": null
+  },
+  {
+    "id": "KPI-2",
+    "employee_id": "EMP-1",
+    "period_id": "PERIOD-SEP",
+    "name": "Pekerjaan selesai",
+    "source": "MANUAL",
+    "weight": "40",
+    "target": "10",
+    "actual": "10"
+  }
+]

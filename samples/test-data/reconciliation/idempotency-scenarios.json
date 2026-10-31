@@ -1,0 +1,32 @@
+[
+  {
+    "id": "IMPORT-TWICE",
+    "action": "import same CSV twice in same scope",
+    "expected": "same dataset identity; transaction count unchanged"
+  },
+  {
+    "id": "REORDER",
+    "action": "reverse CSV row order and import",
+    "expected": "same identity after canonical normalization"
+  },
+  {
+    "id": "RUN-TWICE",
+    "action": "run same pair and rule version twice",
+    "expected": "same run identity; seven BR-A result groups"
+  },
+  {
+    "id": "PARALLEL",
+    "action": "start same run concurrently on two DB connections",
+    "expected": "one committed run; no duplicate results"
+  },
+  {
+    "id": "RULE-V2",
+    "action": "run same data with date tolerance 2 and version v2",
+    "expected": "new run; REF-004 Matched; BR-A verified revenue 17000000; do not add v1 plus v2"
+  },
+  {
+    "id": "ROLLBACK",
+    "action": "inject failure before transaction commit",
+    "expected": "no partial completed results; retry can succeed"
+  }
+]

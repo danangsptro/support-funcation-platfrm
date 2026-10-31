@@ -1,0 +1,52 @@
+{
+  "period_id": "PERIOD-SEP",
+  "rounding": "HALF_UP, display 2 decimal places; no intermediate rounding",
+  "branches": [
+    {
+      "unit_id": "BR-A",
+      "employee_days": 60,
+      "period_days": 30,
+      "average_headcount": "2",
+      "verified_revenue": "15000000",
+      "rpe": "7500000"
+    },
+    {
+      "unit_id": "BR-B",
+      "employee_days": 45,
+      "period_days": 30,
+      "average_headcount": "1.5",
+      "verified_revenue": "6000000",
+      "rpe": "4000000"
+    },
+    {
+      "unit_id": "BR-ZERO",
+      "employee_days": 0,
+      "period_days": 30,
+      "average_headcount": "0",
+      "verified_revenue": "0",
+      "rpe": null
+    }
+  ],
+  "employee_review": {
+    "employee_id": "EMP-1",
+    "kpi_scores": [
+      {
+        "id": "KPI-1",
+        "achievement_percent": "75",
+        "weighted_score": "45"
+      },
+      {
+        "id": "KPI-2",
+        "achievement_percent": "100",
+        "weighted_score": "40"
+      }
+    ],
+    "total_score": "85"
+  },
+  "division": {
+    "unit_id": "DIV-1",
+    "verified_revenue": "21000000",
+    "average_headcount": "3.5",
+    "rpe": "6000000"
+  }
+}

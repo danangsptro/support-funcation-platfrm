@@ -1,0 +1,106 @@
+[
+  {
+    "id": "LOW",
+    "request_id": "REQ-LOW",
+    "actions": [
+      "submit",
+      "MANAGER-A approve step 1"
+    ],
+    "expected_status": "APPROVED"
+  },
+  {
+    "id": "BOUNDARY",
+    "request_id": "REQ-BOUNDARY",
+    "actions": [
+      "submit",
+      "MANAGER-A approve step 1"
+    ],
+    "expected_status": "APPROVED",
+    "expected_steps": 1
+  },
+  {
+    "id": "HIGH",
+    "request_id": "REQ-HIGH",
+    "actions": [
+      "submit",
+      "MANAGER-A approve step 1",
+      "FINANCE approve step 2"
+    ],
+    "expected_status": "APPROVED",
+    "expected_steps": 2
+  },
+  {
+    "id": "RACE",
+    "request_id": "REQ-RACE",
+    "setup": "reset fixture; submit",
+    "parallel": [
+      "MANAGER-A approve step 1",
+      "MANAGER-A2 approve step 1"
+    ],
+    "expected_http_sorted": [
+      200,
+      409
+    ],
+    "expected_decisions_step_1": 1,
+    "expected_status": "PENDING",
+    "expected_active_step": 2
+  },
+  {
+    "id": "RACE-REJECT",
+    "request_id": "REQ-RACE",
+    "setup": "reset fixture; submit",
+    "parallel": [
+      "MANAGER-A approve step 1",
+      "MANAGER-A2 reject step 1"
+    ],
+    "expected_http_sorted": [
+      200,
+      409
+    ],
+    "expected_decisions_step_1": 1,
+    "allowed_final_states": [
+      "PENDING step 2",
+      "REJECTED"
+    ]
+  },
+  {
+    "id": "STALE-STEP",
+    "request_id": "REQ-HIGH",
+    "setup": "reset; submit; approve step 1",
+    "action": "MANAGER-A approve step 1 again",
+    "expected_http": 409
+  },
+  {
+    "id": "DELEGATE",
+    "request_id": "REQ-DELEGATE",
+    "actions": [
+      "submit",
+      "MANAGER-A delegate step 1 to MANAGER-A2",
+      "MANAGER-A2 approve step 1"
+    ],
+    "expected_status": "PENDING",
+    "expected_active_step": 2,
+    "required_audit": [
+      "SUBMITTED",
+      "DELEGATED",
+      "APPROVED"
+    ]
+  },
+  {
+    "id": "INVALID-DELEGATE",
+    "request_id": "REQ-DELEGATE",
+    "action": "delegate to MANAGER-B",
+    "expected_http": 403
+  },
+  {
+    "id": "SELF",
+    "setup": "create request by MANAGER-A and submit",
+    "action": "MANAGER-A approve own request",
+    "expected_http": 403
+  },
+  {
+    "id": "AUDIT",
+    "action": "UPDATE or DELETE audit_events using runtime DB role",
+    "expected": "permission denied; data unchanged"
+  }
+]
