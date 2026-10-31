@@ -18,6 +18,7 @@ Status: seluruh requirement wajib (A-1..C-3) **DONE** dan dapat diselesaikan lew
 | [docs/api.md](docs/api.md) | Kontrak API aktual; versi interaktif: Swagger UI di http://localhost:8080/api/v1/docs (OpenAPI JSON: `/api/v1/docs-json`) |
 | [docs/business-rules.md](docs/business-rules.md) | Aturan bisnis final (formula, matching, akses, workflow) |
 | [docs/requirements-matrix.md](docs/requirements-matrix.md) | Requirement PDF → fitur → test → bukti |
+| [docs/Support-Function-Platform.pptx](docs/Support-Function-Platform.pptx) | Deck presentasi 7 slide (PowerPoint, dengan catatan presenter di Notes) |
 | [docs/test-report.md](docs/test-report.md) | Hasil regression final + histori test per phase |
 | [docs/demo-script.md](docs/demo-script.md) | Urutan demo, akun, fixture, expected result, stack gladi |
 | [docs/SUBMISSION_CHECKLIST.md](docs/SUBMISSION_CHECKLIST.md) | Deliverable wajib → file → status verifikasi |
