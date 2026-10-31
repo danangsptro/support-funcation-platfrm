@@ -2,6 +2,72 @@
 
 Dokumen ini memuat (1) bukti eksekusi nyata per phase dan (2) rencana test. Hanya hasil yang benar-benar dijalankan yang ditulis sebagai PASS/FAIL; yang belum dijalankan berstatus PLANNED, yang tidak bisa dijalankan BLOCKED.
 
+## 0. Hasil final Phase 07 — revisi yang diserahkan (2026-10-31)
+Bagian ini adalah hasil untuk **revisi terakhir**. Bagian §1 di bawahnya adalah **histori** per phase (angka di sana berlaku untuk revisi saat itu).
+
+**Revisi yang diuji**: isi paket = `git ls-files -co --exclude-standard` (255 file; `.env`, `requirements/`, `node_modules`, artefak test tidak termasuk). Sidik SHA-256 gabungan isi paket: `41ce0051664ff100`. Perubahan Phase 07 belum di-commit saat diuji; commit dibuat oleh pemilik repository.
+
+### Ringkasan
+| Pemeriksaan | Runtime | Hasil |
+|---|---|---|
+| Lint · typecheck · production build (backend `nest build` + frontend Vite) | Node 22.23.4 (container `node:22.23.4-alpine`), instal bersih `pnpm install --frozen-lockfile` | Host Node 22.9.0: lint PASS · typecheck PASS · build PASS (revisi akhir). Container Node 22.23.4: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim (run sebelumnya pada revisi sebelum Swagger: lint/typecheck/build PASS) |
+| Unit backend (Jest) | Node 22.23.4 container · Node 22.9.0 host | Host: 85/85 PASS (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
+| Unit frontend (Vitest) | Node 22.23.4 container · Node 22.9.0 host | Host: 70/70 PASS (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
+| Integration PostgreSQL 16.15 (scope, idempotensi, D-42, snapshot, concurrency approval 2 instance, audit privileges, riwayat > 100 run, Swagger) | Node 22.23.4 container · Node 22.9.0 host | Host: 184/184 PASS, 12 suite (container: run container masih berjalan saat dokumen ini difinalkan — tidak diklaim) |
+| E2E Chrome terisolasi `pnpm test:e2e` (desktop 1280px + HP 390px), lalu restart api/web + persistence | Host Node 22.9.0 (Playwright), image dari Dockerfile final | 32/32 PASS → 3/3 PASS |
+| Validator fixture · crosscheck | Python 3.10.13 | PASS · 48/48 PASS |
+| Checkout bersih (stack `sfp-clean`, port 8099/3009/5439) | Docker, `--no-cache --pull` | PASS (rincian di bawah) |
+
+Node 22.9.0 di laptop pengembang berada di bawah `engines` (`>=22.12.0 <23`); pnpm menampilkan peringatan engine. Runtime yang ditetapkan proyek (`.nvmrc` 22.23.4) dipakai untuk verifikasi toolchain final di container; instalasi global pengguna tidak diubah.
+
+### Riwayat rekonsiliasi: paginasi & filter di server
+- API: urutan `created_at DESC, id DESC` (stabil antar halaman); UI memakai `unitId`, `page`, `pageSize` dari API existing — tidak lagi memfilter 100 run terbaru di browser.
+- `reconciliation-history.int-spec.ts` (5 test, PostgreSQL nyata, 112 run; BR-B hanya punya 1 run yang lebih tua dari 110 run BR-A): halaman 1 (100) tanpa BR-B, halaman 2 memuatnya; `unitId=BR-B` → total 1; paginasi 12 × 10 tanpa duplikat walau 10 run ber-`created_at` sama; deep link run lama 200; Manager A filter BR-B → 404, Manager B hanya BR-B; `pageSize=101` → 400. Satu ekspektasi test keliru (`'6000000.00'`) dikoreksi ke format API yang benar `'6000000'` (format string desimal API konsisten di seluruh endpoint).
+- UI: filter mengosongkan halaman & run terpilih; respons lama diabaikan (nomor urut request). Test komponen mensimulasikan respons halaman 2 yang terlambat setelah filter berganti; **mutation check**: menghapus penjaga membuat test gagal, penjaga dikembalikan. Tautan ke run di luar halaman aktif dibuka lewat `GET /reconciliation-runs/:id`; di luar akses → pesan "tidak ditemukan dalam akses Anda" (E2E Manager B).
+
+### Investigasi `GET /approval-requests/options` yang pernah menggantung
+| Aspek | Temuan |
+|---|---|
+| Kondisi kejadian | Sekali, Phase 05, run E2E pertama tepat setelah `docker compose up --build`. Trace Playwright: request options status −1 (tidak pernah dijawab) sampai test timeout 30 dtk; di trace yang sama `POST /auth/login` 4,2 dtk, `/health/ready` 1,5 dtk, `/auth/me` 0,9 dtk (normalnya < 200 ms). Log API stack E2E ikut terhapus bersama volume; API belum punya log akses per request. |
+| Pemeriksaan | Kode endpoint (2 query + resolusi scope, tanpa lock/transaksi panjang); nginx tanpa keepalive upstream; Prisma pool timeout akan menghasilkan error, bukan hang. Uji beban di stack sekali pakai: 1.000 request (40 paralel) campuran options/list/health/me → normal p99 options 116 ms; **8 core CPU dijenuhkan** → p99 485 ms, max 556 ms; **0 gagal/timeout**, log akses mencatat 500 respons options 200. |
+| Kesimpulan | Hipotesis pool habis, kontensi request paralel, dan CPU jenuh **tidak terbukti**. Akar masalah **belum diketahui** (tidak tereproduksi) — bukan "sudah diperbaiki". |
+| Dampak bila terulang | Form pengajuan baru tidak terisi; tidak ada data yang rusak. |
+| Mitigasi | Timeout 10 dtk + "Coba lagi" (Phase 05). **Diuji deterministik**: unit (fake timer: belum batal di 9,9 dtk, batal di 10,1 dtk, Coba lagi memuat) dan E2E (request pertama ditahan tanpa jawaban → pesan setelah 10 dtk → Coba lagi memuat form). |
+| Observabilitas baru | Log akses API per request (`requestId method path status durasi`, peringatan ≥ 2 dtk dan koneksi ditutup klien) + `scripts/e2e-isolated.sh` menyimpan log api/web/db ke `frontend/test-results/stack-logs.txt` sebelum stack dihapus bila test gagal (terbukti bekerja pada kegagalan test HP). |
+
+### Smoke test HP 390px & desktop
+`e2e/mobile.e2e.ts` (4 test) — Rekonsiliasi (Finance: drawer, unggah 3 langkah, hasil, tombol panduan), Performa (HR: analitik, review, dialog finalisasi dibuka lalu dibatalkan), Persetujuan (pengaju: form baru; Manager: dialog Setujui dibuka lalu dibatalkan), Beranda & Organisasi. Run pertama menemukan **dua bug nyata**: halaman melebar 150 px (hasil rekonsiliasi) dan 265 px (review karyawan) karena elemen `sr-only` (absolute) lolos dari wadah `overflow-x-auto` yang tidak `relative`, dan grid tanpa `minmax(0,…)` pada layar sempit. Diperbaiki (semua wadah tabel `relative`, `grid-cols-1`). Dua kegagalan berikutnya karena data test (karyawan tanpa KPI; Manager tanpa pengajuan terkirim) — test diubah menyiapkan datanya sendiri. Desktop 1280px: tanpa scroll horizontal di 6 halaman (`integration.e2e.ts`).
+
+### Environment & image
+- `.nvmrc` 22.23.4; `engines.node` `>=22.12.0 <23`; `packageManager` pnpm@10.13.1; lockfile `pnpm-lock.yaml` (`--frozen-lockfile` di host, container, dan Docker).
+- Image yang diuji: `node:22.23.4-alpine` (build API & web), `postgres:16.15-alpine` (PostgreSQL 16.15), `nginx:1.27.5-alpine` (nginx 1.27.5).
+- `backend/Dockerfile` tiga target: `build`, `migrate` (Prisma CLI, migration + seed), `runtime` (dependency produksi `--frozen-lockfile --prod --offline` + Prisma Client hasil generate). Image API 851 MB → 655 MB; `prisma`/`jest`/`typescript`/`tsx`/`eslint` tidak dapat di-resolve di runtime (`prisma` & `typescript` tersisa hanya sebagai peer `@prisma/client`).
+- Ditemukan saat verifikasi bersih: (1) `pnpm deploy --legacy` me-resolve ulang dari registry dan macet > 10 menit → diganti instalasi offline dari lockfile; (2) di checkout baru Prisma Client tidak ter-generate (postinstall `@prisma/client` berjalan dari root workspace) → `backend` mendapat `postinstall: prisma generate`.
+
+### Checkout bersih (stack disposable `sfp-clean`)
+| Langkah | Hasil |
+|---|---|
+| Salin isi paket saja; `cp .env.example .env` + secret `openssl rand` | Tanpa `node_modules`/`.env` lama |
+| `docker compose -p sfp-clean build --no-cache --pull` | PASS, 5 mnt 31 dtk |
+| `up -d --wait` (volume kosong) | PASS 17 dtk; migrate: 4 migration + seed; api/db/web healthy |
+| `node scripts/prepare-demo-recon.mjs` 2× | Run 1: import BR-A/BR-B + run v1 (28,57% · Rp15 jt; 100% · Rp6 jt); run 2: semua "sudah ada (idempoten)"; tx=15, datasets=4, runs=2 tetap |
+| Seed ulang `docker compose run --rm migrate` | Jumlah data tidak berubah |
+| E2E penuh terhadap stack bersih | 32/32 PASS |
+| `restart db api web` (volume tetap) → persistence | 3/3 PASS |
+| `APP_OWNER_PASSWORD` salah → `up` | migrate exit 1 (P1000), api/web tidak start, API tidak menjawab; password benar → pulih, data utuh |
+
+Catatan: dua perubahan Dockerfile terakhir (urutan `COPY prisma` + postinstall, dan `nest build` untuk Swagger) dibuat **setelah** langkah clean-room di atas. Keduanya diverifikasi lewat build image ulang pada `pnpm test:e2e` final (32/32 + 3/3) dan rebuild stack demo (healthy, data utuh); build `--no-cache` tidak diulang.
+
+### Kejadian selama verifikasi
+- Docker Desktop (memori 4 GB) kehabisan memori saat instal + test di container berjalan bersamaan dengan build & E2E: semua container berhenti, termasuk stack demo. Volume tidak dihapus; demo dipulihkan dengan `docker compose up -d --wait` dan berisi 6 pengajuan, 2 run, 0 review, 15 audit (diukur setelah pemulihan dan lagi setelah rebuild Swagger — sama; jumlah tepat sebelum kejadian tidak diukur). Hasil run yang terganggu itu **tidak dipakai**; semua verifikasi final dijalankan berurutan.
+
+### Keterbatasan & yang belum dijalankan
+- Smoke manual oleh manusia dan gladi presentasi belum dilakukan (E2E otomatis + screenshot sebagai pengganti).
+- HP hanya diuji di 390px (Chrome emulasi), bukan perangkat fisik.
+- Tidak ada CI; semua run lokal.
+- Akar masalah hang options belum diketahui (lihat di atas).
+- Build `--no-cache` tidak diulang setelah dua perubahan Dockerfile terakhir (lihat catatan).
+
 ## 1. Bukti eksekusi
 
 ### Loading pindah halaman — 2026-10-31 (D-56)
